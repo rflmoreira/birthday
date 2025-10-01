@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Um Pedido Especial</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Poppins:wght@300;400&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+    <style>
+        /* Definições de cores e fontes do projeto */
+        :root {
+            --cor-fundo: #fdf8f5;
+            --cor-fundo-card: #ffffff;
+            --cor-texto: #5c5470;
+            --cor-destaque: #d4a5a5;
+            --cor-primaria: #e6c5c5;
+            --cor-primaria-hover: #d4a5a5;
+            --cor-erro: #e57373;
+            
+            --fonte-titulo: 'Cormorant Garamond', serif;
+            --fonte-corpo: 'Poppins', sans-serif;
+            --fonte-assinatura: 'Great Vibes', cursive;
+        }
+
+        /* Reset básico e animação de fundo */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--fonte-corpo);
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(-45deg, #fce9e9, #fdf8f5, #e6d3d3, #fdf8f5);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .floating-hearts {
+            pointer-events: none;
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .floating-hearts span {
+            position: absolute;
+            color: rgba(212, 165, 165, 0.35);
+            font-size: clamp(20px, 4vw, 36px);
+            animation: floatUp linear infinite;
+            opacity: 0;
+            bottom: -15vh;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.8); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-120vh) scale(1.2); opacity: 0; }
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Estilo do cartão principal */
+        main {
+            background-color: var(--cor-fundo-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(92, 84, 112, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        max-width 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        padding 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .progresso {
+            width: 100%;
+            margin-bottom: clamp(10px, 2vw, 20px);
+        }
+
+        .progresso ol {
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0;
+            counter-reset: passo;
+            margin: 0;
+            padding: 0;
+        }
+
+        .progresso li {
+            flex: 1;
+            position: relative;
+            font-size: clamp(0.2rem, 0.6vw, 0.4rem);
+            text-transform: uppercase;
+            letter-spacing: 0;
+            color: rgba(92, 84, 112, 0.55);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(0px, 0.2vw, 1px);
+            text-align: center;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .progresso li::before {
+            counter-increment: passo;
+            content: counter(passo);
+            display: grid;
+            place-items: center;
+            width: clamp(8px, 2.5vw, 16px);
+            height: clamp(8px, 2.5vw, 16px);
+            border-radius: 50%;
+            border: 1px solid rgba(212, 165, 165, 0.3);
+            background-color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            font-size: clamp(0.3rem, 1vw, 0.6rem);
+            flex-shrink: 0;
+        }
+
+        .progresso li::after {
+            display: none;
+        }
+
+        .progresso li[data-estado="ativo"] {
+            color: var(--cor-destaque);
+        }
+
+        .progresso li[data-estado="ativo"]::before {
+            background: linear-gradient(45deg, #d4a5a5, #e6c5c5);
+            color: #fff;
+            border-color: transparent;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(212, 165, 165, 0.4);
+        }
+
+        .progresso li[data-estado="concluido"] {
+            color: rgba(92, 84, 112, 0.85);
+        }
+
+        .progresso li[data-estado="concluido"]::before {
+            content: '\2713';
+            font-size: 1rem;
+            background: rgba(212, 165, 165, 0.15);
+            border-color: rgba(212, 165, 165, 0.4);
+            color: var(--cor-destaque);
+        }
+
+        .tela {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+            transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: opacity, transform;
+        }
+
+        .tela[data-visivel="true"] {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        
+
+        /* Fotos e elementos decorativos */
+        .foto-principal {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--cor-primaria);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(212, 165, 165, 0.3);
+        }
+
+        .foto-pergunta {
+            width: 100%;
+            height: 180px;
+            border-radius: 15px;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+
+        .divider {
+            height: 1px;
+            width: 50px;
+            background: linear-gradient(to right, transparent, var(--cor-primaria), transparent);
+            margin: 15px 0;
+        }
+
+        /* Estilos de texto */
+        h1, h2 {
+            font-family: var(--fonte-titulo);
+            color: var(--cor-destaque);
+            font-weight: 700;
+        }
+
+        h1 { font-size: 2.1em; margin-bottom: 10px; }
+        h2 { font-size: 1.8em; margin-bottom: 5px; }
+        p { font-size: 0.95em; line-height: 1.7; font-weight: 300; }
+        .pergunta { font-weight: 400; font-size: 1.05em; }
+        .transicao { 
+            margin: 10px 0;
+            opacity: 0;
+            animation: slideUp 0.8s ease-out forwards;
+        }
+        .transicao:nth-child(2) { animation-delay: 0.5s; }
+        .transicao:nth-child(3) { animation-delay: 1s; }
+
+        .emoji-beijo {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 1.2em;
+            animation: beijinho 1.6s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes beijinho {
+            0% { transform: translate3d(0, 0, 0) scale(0.95) rotate(0deg); opacity: 1; }
+            35% { transform: translate3d(4px, -6px, 0) scale(1.05) rotate(-8deg); }
+            65% { transform: translate3d(8px, -12px, 0) scale(1.1) rotate(4deg); opacity: 0.75; }
+            100% { transform: translate3d(12px, -18px, 0) scale(0.9) rotate(-6deg); opacity: 0; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pedido-nome {
+            font-family: var(--fonte-assinatura);
+            font-size: 3.5em;
+            color: var(--cor-destaque);
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+        
+        .pedido-pergunta {
+             font-family: var(--fonte-titulo);
+             font-weight: 700;
+             font-size: 2.5em;
+             margin-top: 15px;
+        }
+
+        /* Animação de texto sendo digitado */
+        .pedido-nome,
+        .pedido-pergunta {
+            display: inline-block;
+            position: relative;
+        }
+
+        .pedido-nome::after,
+        .pedido-pergunta::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            bottom: 15%;
+            right: -6px;
+            width: 2px;
+            background: currentColor;
+            opacity: 0;
+            animation: handwritingBlink 0.7s steps(2, start) infinite;
+        }
+
+        .pedido-nome.escrevendo::after,
+        .pedido-pergunta.escrevendo::after {
+            opacity: 1;
+        }
+
+        .pedido-nome.finalizado::after,
+        .pedido-pergunta.finalizado::after {
+            opacity: 0;
+            animation: none;
+        }
+
+        .handwriting-letter {
+            display: inline-block;
+            opacity: 0;
+            transform: translate3d(0, 8px, 0);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .handwriting-letter.apareceu {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+
+        @keyframes handwritingBlink {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Estilos dos botões */
+        button {
+            background-color: var(--cor-primaria);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-family: var(--fonte-corpo);
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(230, 197, 197, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            background-color: var(--cor-primaria-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(212, 165, 165, 0.5);
+        }
+        
+        button.wrong-answer {
+            animation: shake 0.5s;
+            background-color: var(--cor-erro);
+            box-shadow: 0 6px 24px rgba(229, 115, 115, 0.5);
+        }
+
+        .botao-reiniciar {
+            width: auto;
+            padding-inline: 30px;
+            margin-top: 35px;
+            background: rgba(92, 84, 112, 0.1);
+            color: var(--cor-texto);
+            box-shadow: none;
+        }
+
+        .botao-reiniciar:hover {
+            background: rgba(92, 84, 112, 0.2);
+            box-shadow: 0 6px 20px rgba(92, 84, 112, 0.15);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .opcoes { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .opcoes-pedido { display: flex; gap: 15px; margin-top: 25px; width: 100%; }
+        
+        #btn-sim { background: linear-gradient(45deg, #d4a5a5, #e6c5c5); }
+        #btn-nao { background-color: #d1d1d1; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); min-width: 120px; width: auto; flex-shrink: 0; }
+        #btn-nao::before { content: none; }
+        #btn-nao:hover { background-color: #c4c4c4; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1); }
+        #btn-nao.fugindo { position: absolute; transition: all 0.3s ease; }
+        
+        /* Botão de controle de áudio */
+        .audio-control {
+            position: fixed; top: 20px; right: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            color: var(--cor-texto); border: 1px solid #eee; border-radius: 50%;
+            font-size: 1.3em; cursor: pointer; z-index: 1000; width: 50px;
+            height: 50px; padding: 0; box-shadow: 0 4px 16px rgba(92, 84, 112, 0.12);
+        }
+        .audio-control:hover { transform: scale(1.1); }
+        
+        /* Animação do coração no final */
+        .final-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .heart-container { margin-top: 20px; width: 100px; height: 100px; opacity: 0; transform: scale(0); transition: opacity 0.5s ease, transform 0.5s ease; }
+        .heart-container.visible { opacity: 1; transform: scale(1); }
+        .heart-path { stroke: var(--cor-destaque); stroke-width: 2; fill: transparent; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw-heart 2s ease-out forwards; }
+        @keyframes draw-heart { to { stroke-dashoffset: 0; } }
+        .heart-path.filled { animation: draw-heart 2s ease-out forwards, fill-heart 1s ease-out 1.5s forwards; }
+        @keyframes fill-heart { from { fill: transparent; } to { fill: var(--cor-destaque); } }
+
+        .heart-container.beating {
+            animation: beat-heart 1.5s infinite 2.5s;
+        }
+
+        @keyframes beat-heart { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .floating-hearts {
+                display: none;
+            }
+
+            .audio-control:hover,
+            button:hover {
+                transform: none !important;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <audio id="background-music">
+        <source src="src/mp3/die-with-a-smile.mp3" type="audio/mpeg">
+        Seu navegador não suporta áudio.
+    </audio>
+
+    <button id="mute-button" class="audio-control">
+        <i class="ph-bold ph-speaker-slash"></i>
+    </button>
+
+    <div class="floating-hearts" id="floating-hearts"></div>
+
+    <main>
+        <nav class="progresso" aria-label="Progresso da surpresa">
+            <ol>
+                <li class="passo" data-tela="tela-1">Começo</li>
+                <li class="passo" data-tela="tela-2">Lembranças</li>
+                <li class="passo" data-tela="tela-3">Encontro</li>
+                <li class="passo" data-tela="tela-2b">Trilha Sonora</li>
+                <li class="passo" data-tela="tela-4">Transição</li>
+                <li class="passo" data-tela="tela-pedido">Pedido</li>
+                <li class="passo" data-tela="tela-sim">Final</li>
+            </ol>
+        </nav>
+        <section id="tela-1" class="tela">
+            <img src="src/imagens/foto-capa.png" alt="Foto de vocês" class="foto-principal">
+            <h1>Um Pedido Especial</h1>
+            <div class="divider"></div>
+            <p>Preparei uma pequena surpresa para você. Espero que goste, meu amor.</p>
+            <button onclick="mostrarTela('tela-2')"><i class="ph-bold ph-play-circle"></i> Começar</button>
+        </section>
+
+        <section id="tela-2" class="tela" style="display: none;">
+            <h2>Relembrando Nossa História</h2>
+            <div class="divider"></div>
+            <img src="src/imagens/foto-pergunta1.png" alt="Lugar onde se conheceram" class="foto-pergunta">
+            <p class="pergunta">Vamos começar do início... Você se lembra onde nossos caminhos se cruzaram pela primeira vez?</p>
+            <div class="opcoes">
+                <button onclick="mostrarTela('tela-3')">No Instagram, com uma mensagem que mudou tudo.</button>
+                <button onclick="handleWrongAnswer(this)">Em uma biblioteca, entre livros de física quântica.</button>
+                <button onclick="handleWrongAnswer(this)">Fomos apresentados pelo Batman em Gotham City.</button>
+            </div>
+        </section>
+
+        <section id="tela-3" class="tela" style="display: none;">
+            <h2>Relembrando Nossa História</h2>
+             <div class="divider"></div>
+            <img src="src/imagens/foto-pergunta2.png" alt="Primeiro encontro" class="foto-pergunta">
+             <p class="pergunta">Aquele primeiro encontro foi inesquecível. Onde foi que a nossa história realmente começou?</p>
+            <div class="opcoes">
+                <button onclick="handleWrongAnswer(this)">Em um teatro, assistindo a um drama romântico.</button>
+                <button onclick="mostrarTela('tela-2b')">No Pataca Pub, com bons drinks e uma conversa ainda melhor.</button>
+                <button onclick="handleWrongAnswer(this)">Na quermesse do bairro, dividindo uma pamonha.</button>
+            </div>
+        </section>
+
+        <section id="tela-2b" class="tela" style="display: none;">
+            <h2>Relembrando Nossa História</h2>
+            <div class="divider"></div>
+            <img src="src/imagens/foto-pergunta1.png" alt="Capa de um álbum de música" class="foto-pergunta">
+            <p class="pergunta">E a nossa trilha sonora? Qual música marcou o início de tudo para nós?</p>
+            <div class="opcoes">
+                <button onclick="handleWrongAnswer(this)">Evidências, um clássico sertanejo.</button>
+                <button onclick="mostrarTela('tela-4')">Die With a Smile, de Lady Gaga e Bruno Mars.</button>
+                <button onclick="handleWrongAnswer(this)">Baby Shark (doo doo doo doo doo doo).</button>
+            </div>
+        </section>
+        
+        <section id="tela-4" class="tela" style="display: none;">
+            <p class="transicao" style="font-size: 1.1em; font-family: var(--fonte-titulo); font-weight: 600;">Cada lembrança nos trouxe até este momento...</p>
+            <p class="transicao">Mas esta surpresa não é apenas sobre o passado.</p>
+            <p class="transicao">É sobre o nosso futuro.</p>
+            <button onclick="mostrarTela('tela-pedido')" style="animation-delay: 1.5s; opacity: 0; animation: slideUp 0.8s ease-out 1.5s forwards;"><i class="ph-bold ph-arrow-right"></i> Ver o próximo capítulo</button>
+        </section>
+
+        <section id="tela-pedido" class="tela" style="display: none;">
+            <img src="src/imagens/foto-capa.png" alt="Foto favorita de vocês" class="foto-principal">
+            <h2 class="pedido-nome">Nicole...</h2>
+            <p>Nossa jornada até aqui tem sido incrível, e mal posso esperar para escrever os próximos capítulos com você.</p>
+            <h1 class="pedido-pergunta">Quer ser minha<br>namorada?</h1>
+            <div class="opcoes-pedido">
+                <button id="btn-sim" onclick="mostrarTela('tela-sim')">SIM!</button>
+                <button id="btn-nao">Não</button>
+            </div>
+        </section>
+        
+        <section id="tela-sim" class="tela" style="display: none;">
+            <div class="final-container">
+                <h1 class="transicao">Eu sabia que você diria sim!</h1>
+                <p class="transicao" style="animation-delay: 0.5s;">Agora, que tal largar o celular e me dar um beijo?<span class="emoji-beijo" aria-hidden="true">😘</span></p>
+                <p class="transicao" style="animation-delay: 1s;">Guarde esta página com carinho. Ela será um lembrete eterno de como nossa nova jornada começou.</p>
+                <div id="heart-animation-container" class="heart-container">
+                    <svg viewBox="0 0 24 24">
+                        <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                <button class="botao-reiniciar" onclick="reiniciarHistoria()"><i class="ph-bold ph-arrow-counter-clockwise"></i> Reviver nossa história</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        const telas = document.querySelectorAll('.tela');
+        const passos = Array.from(document.querySelectorAll('.passo'));
+        const ordemTelas = passos.map(passo => passo.dataset.tela);
+        const floatingHeartsContainer = document.getElementById('floating-hearts');
+        const reduzMovimento = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const mainElement = document.querySelector('main');
+        let primeiraTrocaConcluida = false;
+
+        const pedidoNomeEl = document.querySelector('.pedido-nome');
+        const pedidoPerguntaEl = document.querySelector('.pedido-pergunta');
+
+        function obterTextoComQuebras(elemento) {
+            if (!elemento) return '';
+            return Array.from(elemento.childNodes).map((node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return node.textContent;
+                }
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (node.tagName === 'BR') {
+                        return '\n';
+                    }
+                    return obterTextoComQuebras(node);
+                }
+                return '';
+            }).join('');
+        }
+
+        function definirConteudoComQuebras(elemento, texto) {
+            if (!elemento) return;
+            elemento.innerHTML = '';
+            const partes = String(texto ?? '').split('\n');
+            partes.forEach((parte, indice) => {
+                elemento.appendChild(document.createTextNode(parte));
+                if (indice < partes.length - 1) {
+                    elemento.appendChild(document.createElement('br'));
+                }
+            });
+        }
+
+        const textosPedido = {
+            nome: obterTextoComQuebras(pedidoNomeEl),
+            pergunta: obterTextoComQuebras(pedidoPerguntaEl)
+        };
+        let animacaoPedidoConcluida = false;
+        let animacaoPedidoRodando = false;
+        const animacaoPedidoTimers = new Set();
+        const animacaoPedidoResolves = new Set();
+
+        function resetarEscritaPedido() {
+            if (!pedidoNomeEl || !pedidoPerguntaEl) return;
+            animacaoPedidoTimers.forEach((timeoutId) => clearTimeout(timeoutId));
+            animacaoPedidoTimers.clear();
+            animacaoPedidoResolves.forEach((resolver) => resolver(false));
+            animacaoPedidoResolves.clear();
+            pedidoNomeEl.classList.remove('finalizado', 'escrevendo');
+            pedidoPerguntaEl.classList.remove('finalizado', 'escrevendo');
+            pedidoNomeEl.innerHTML = '';
+            pedidoPerguntaEl.innerHTML = '';
+            const ariaNome = String(textosPedido.nome ?? '').replace(/\s+/g, ' ').trim();
+            const ariaPergunta = String(textosPedido.pergunta ?? '').replace(/\s+/g, ' ').trim();
+            pedidoNomeEl.setAttribute('aria-label', ariaNome || textosPedido.nome || '');
+            pedidoPerguntaEl.setAttribute('aria-label', ariaPergunta || textosPedido.pergunta || '');
+        }
+
+        function escreverElemento(elemento, texto, opcoes = {}) {
+            return new Promise((resolve) => {
+                if (!elemento) {
+                    resolve();
+                    return;
+                }
+
+                const {
+                    velocidadeBase = 90,
+                    variacao = 80,
+                    atrasoInicial = 0
+                } = opcoes;
+
+                const caracteres = Array.from(texto);
+                let finalizado = false;
+                const resolver = (forcarFinal = true) => {
+                    if (finalizado) return;
+                    finalizado = true;
+                    animacaoPedidoResolves.delete(resolver);
+                    if (elemento && forcarFinal) {
+                        elemento.classList.remove('escrevendo');
+                        elemento.classList.add('finalizado');
+                    }
+                    resolve();
+                };
+
+                animacaoPedidoResolves.add(resolver);
+
+                if (caracteres.length === 0) {
+                    elemento.textContent = '';
+                    resolver(true);
+                    return;
+                }
+
+                let tempoAcumulado = atrasoInicial;
+                elemento.innerHTML = '';
+                elemento.classList.add('escrevendo');
+                const ariaTexto = String(texto ?? '').replace(/\s+/g, ' ').trim();
+                elemento.setAttribute('aria-label', ariaTexto || texto || '');
+
+                caracteres.forEach((caractere, indice) => {
+                    tempoAcumulado += Math.max(25, velocidadeBase + (Math.random() * variacao) - (variacao / 2));
+                    const timeoutId = setTimeout(() => {
+                        animacaoPedidoTimers.delete(timeoutId);
+                        if (!elemento) {
+                            resolver(false);
+                            return;
+                        }
+
+                        if (caractere === '\n') {
+                            elemento.appendChild(document.createElement('br'));
+                        } else {
+                            const span = document.createElement('span');
+                            span.className = 'handwriting-letter';
+                            span.textContent = caractere === ' ' ? String.fromCharCode(160) : caractere;
+                            elemento.appendChild(span);
+                            requestAnimationFrame(() => {
+                                span.classList.add('apareceu');
+                            });
+                        }
+
+                        if (indice === caracteres.length - 1) {
+                            const finalizarId = setTimeout(() => {
+                                animacaoPedidoTimers.delete(finalizarId);
+                                resolver(true);
+                            }, 220);
+                            animacaoPedidoTimers.add(finalizarId);
+                        }
+                    }, tempoAcumulado);
+                    animacaoPedidoTimers.add(timeoutId);
+                });
+            });
+        }
+
+        function iniciarEscritaPedido() {
+            if (!pedidoNomeEl || !pedidoPerguntaEl) return;
+            if (animacaoPedidoRodando) return;
+            if (animacaoPedidoConcluida && !reduzMovimento.matches) return;
+
+            resetarEscritaPedido();
+
+            if (reduzMovimento.matches) {
+                definirConteudoComQuebras(pedidoNomeEl, textosPedido.nome);
+                definirConteudoComQuebras(pedidoPerguntaEl, textosPedido.pergunta);
+                pedidoNomeEl.classList.add('finalizado');
+                pedidoPerguntaEl.classList.add('finalizado');
+                animacaoPedidoConcluida = true;
+                animacaoPedidoRodando = false;
+                return;
+            }
+
+            animacaoPedidoRodando = true;
+            animacaoPedidoConcluida = false;
+
+            escreverElemento(pedidoNomeEl, textosPedido.nome, {
+                velocidadeBase: 85,
+                variacao: 70,
+                atrasoInicial: 220
+            }).then(() => {
+                return escreverElemento(pedidoPerguntaEl, textosPedido.pergunta, {
+                    velocidadeBase: 95,
+                    variacao: 90,
+                    atrasoInicial: 320
+                });
+            }).then(() => {
+                animacaoPedidoConcluida = true;
+            }).finally(() => {
+                animacaoPedidoRodando = false;
+            });
+        }
+
+        function configurarTextoPedidoInicial() {
+            if (!pedidoNomeEl || !pedidoPerguntaEl) return;
+
+            const ariaNome = String(textosPedido.nome ?? '').replace(/\s+/g, ' ').trim();
+            const ariaPergunta = String(textosPedido.pergunta ?? '').replace(/\s+/g, ' ').trim();
+            pedidoNomeEl.setAttribute('aria-label', ariaNome || textosPedido.nome || '');
+            pedidoPerguntaEl.setAttribute('aria-label', ariaPergunta || textosPedido.pergunta || '');
+
+            if (reduzMovimento.matches) {
+                definirConteudoComQuebras(pedidoNomeEl, textosPedido.nome);
+                definirConteudoComQuebras(pedidoPerguntaEl, textosPedido.pergunta);
+                pedidoNomeEl.classList.add('finalizado');
+                pedidoPerguntaEl.classList.add('finalizado');
+                animacaoPedidoConcluida = true;
+            } else {
+                resetarEscritaPedido();
+                animacaoPedidoConcluida = false;
+            }
+        }
+
+        configurarTextoPedidoInicial();
+
+        function mostrarTela(idTela) {
+            const proximaTela = document.getElementById(idTela);
+            if (!proximaTela) {
+                return;
+            }
+
+            const podeAnimar = Boolean(mainElement) && !reduzMovimento.matches && primeiraTrocaConcluida;
+            let alturaInicial;
+
+            if (podeAnimar) {
+                alturaInicial = mainElement.offsetHeight;
+                mainElement.style.height = `${alturaInicial}px`;
+                mainElement.style.transition = 'height 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+            }
+
+            telas.forEach(tela => {
+                tela.style.display = 'none';
+                tela.removeAttribute('data-visivel');
+                tela.setAttribute('aria-hidden', 'true');
+            });
+
+            proximaTela.style.display = 'flex';
+
+            const aplicarVisibilidade = () => {
+                proximaTela.setAttribute('data-visivel', 'true');
+                proximaTela.setAttribute('aria-hidden', 'false');
+            };
+
+            if (reduzMovimento.matches) {
+                aplicarVisibilidade();
+            }
+
+            if (podeAnimar) {
+                requestAnimationFrame(() => {
+                    if (!mainElement) {
+                        return;
+                    }
+
+                    if (!reduzMovimento.matches) {
+                        aplicarVisibilidade();
+                    }
+
+                    const alturaFinal = mainElement.scrollHeight;
+
+                    if (alturaFinal === alturaInicial) {
+                        mainElement.style.height = '';
+                        return;
+                    }
+
+                    const limparAltura = (event) => {
+                        if (event.propertyName !== 'height') {
+                            return;
+                        }
+                        mainElement.style.height = '';
+                        mainElement.style.transition = '';
+                        mainElement.removeEventListener('transitionend', limparAltura);
+                    };
+
+                    mainElement.addEventListener('transitionend', limparAltura);
+                    mainElement.getBoundingClientRect();
+                    
+                    // Delay para suavizar a transição
+                    setTimeout(() => {
+                        mainElement.style.height = `${alturaFinal}px`;
+                    }, 10);
+                });
+            } else {
+                if (!reduzMovimento.matches) {
+                    requestAnimationFrame(aplicarVisibilidade);
+                }
+                if (mainElement) {
+                    mainElement.style.height = '';
+                }
+            }
+
+            primeiraTrocaConcluida = true;
+
+            atualizarProgresso(idTela);
+            resetarBotaoNao();
+
+            if (idTela === 'tela-pedido') {
+                iniciarEscritaPedido();
+            }
+
+            if (idTela === 'tela-sim') {
+                iniciarAnimacaoFinal();
+            }
+        }
+
+        const btnNao = document.getElementById('btn-nao');
+
+        function resetarBotaoNao() {
+            if (!btnNao) return;
+            btnNao.classList.remove('fugindo');
+            btnNao.style.position = '';
+            btnNao.style.left = '';
+            btnNao.style.top = '';
+            btnNao.style.transform = '';
+        }
+
+        // Faz o botão "Não" fugir quando o usuário tenta clicar
+        function moverBotaoNao() {
+            if (!mainElement || !btnNao) {
+                return;
+            }
+
+            // Atualiza o layout antes de calcular posições
+            btnNao.offsetHeight;
+            
+            // Dimensões do container principal
+            const containerRect = mainElement.getBoundingClientRect();
+            const containerPadding = {
+                left: parseInt(getComputedStyle(mainElement).paddingLeft, 10),
+                top: parseInt(getComputedStyle(mainElement).paddingTop, 10),
+                right: parseInt(getComputedStyle(mainElement).paddingRight, 10),
+                bottom: parseInt(getComputedStyle(mainElement).paddingBottom, 10)
+            };
+
+            // Calcula área útil do container
+            const areaDisponivel = {
+                width: containerRect.width - containerPadding.left - containerPadding.right,
+                height: containerRect.height - containerPadding.top - containerPadding.bottom
+            };
+
+            // Tamanho do botão
+            const btnRect = btnNao.getBoundingClientRect();
+            const larguraBotao = btnRect.width;
+            const alturaBotao = btnRect.height;
+
+            // Margem de segurança
+            const margemSeguranca = 10;
+
+            // Define limites para o movimento
+            const limiteMaxX = Math.max(areaDisponivel.width - larguraBotao - margemSeguranca, margemSeguranca);
+            const limiteMaxY = Math.max(areaDisponivel.height - alturaBotao - margemSeguranca, margemSeguranca);
+
+            // Não move se não tem espaço
+            if (limiteMaxX <= margemSeguranca || limiteMaxY <= margemSeguranca) {
+                return;
+            }
+
+            // Nova posição aleatória
+            const novaX = margemSeguranca + Math.random() * (limiteMaxX - margemSeguranca);
+            const novaY = margemSeguranca + Math.random() * (limiteMaxY - margemSeguranca);
+
+            // Move o botão para nova posição
+            btnNao.classList.add('fugindo');
+            btnNao.style.position = 'absolute';
+            btnNao.style.left = `${novaX}px`;
+            btnNao.style.top = `${novaY}px`;
+        }
+
+        // Eventos do botão "Não"
+        if (btnNao) {
+            btnNao.addEventListener('mouseenter', moverBotaoNao);
+            btnNao.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                moverBotaoNao();
+            });
+            
+            // Evita cliques durante o movimento
+            btnNao.addEventListener('click', (e) => {
+                if (btnNao.classList.contains('fugindo')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        }
+        
+        // Feedback visual para respostas erradas
+        function handleWrongAnswer(button) {
+            button.classList.add('wrong-answer');
+            setTimeout(() => {
+                button.classList.remove('wrong-answer');
+            }, 500);
+        }
+
+        function dispararConfete() {
+            if (reduzMovimento.matches) return;
+            const duration = 2 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1001 };
+            const colors = ['#d4a5a5', '#e6c5c5', '#5c5470', '#ffffff'];
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                const particleCount = 50 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: colors });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: colors });
+            }, 250);
+        }
+
+        function iniciarAnimacaoFinal() {
+            dispararConfete();
+
+            const heartContainer = document.getElementById('heart-animation-container');
+            const heartPath = heartContainer.querySelector('.heart-path');
+
+            setTimeout(() => {
+                heartContainer.classList.add('visible');
+                setTimeout(() => {
+                     heartPath.classList.add('filled');
+                     heartContainer.classList.add('beating'); // Adiciona a classe para o pulsar
+                }, 500);
+            }, 1500);
+        }
+
+        // Controle da música de fundo
+        const backgroundMusic = document.getElementById('background-music');
+        const muteButton = document.getElementById('mute-button');
+        const VOLUME_PADRAO = 0.3;
+        const FADE_PADRAO_MS = 2200;
+        const LOOP_FADE_MARGEM_S = 3.5;
+        const LOOP_FADE_DURATION_MS = 2600;
+        let isMuted = true;
+        let userInteracted = false;
+        let volumeFadeFrame = null;
+    let volumeFadeResolver = null;
+        let loopFadeRodando = false;
+    let loopFadeSequencia = 0;
+
+        if (backgroundMusic) {
+            backgroundMusic.volume = 0;
+            backgroundMusic.muted = true;
+            backgroundMusic.loop = false;
+            backgroundMusic.removeAttribute('loop');
+        }
+
+        function cancelarFadeVolume() {
+            if (volumeFadeFrame !== null) {
+                cancelAnimationFrame(volumeFadeFrame);
+                volumeFadeFrame = null;
+            }
+            if (typeof volumeFadeResolver === 'function') {
+                const resolver = volumeFadeResolver;
+                volumeFadeResolver = null;
+                resolver(false);
+            }
+        }
+
+        function fadeVolume(audio, targetVolume, options = {}) {
+            if (!audio) return Promise.resolve(false);
+
+            const { duration = FADE_PADRAO_MS, pauseWhenDone = false } = options;
+            cancelarFadeVolume();
+
+            const volumeInicial = audio.volume;
+            const diferenca = targetVolume - volumeInicial;
+
+            if (Math.abs(diferenca) < 0.001 || duration <= 0) {
+                audio.volume = Math.min(1, Math.max(0, targetVolume));
+                if (pauseWhenDone && targetVolume <= 0) {
+                    audio.pause();
+                    audio.muted = true;
+                }
+                return Promise.resolve(true);
+            }
+
+            return new Promise((resolve) => {
+                volumeFadeResolver = resolve;
+                let inicio = null;
+
+                const passo = (timestamp) => {
+                    if (inicio === null) inicio = timestamp;
+                    const progresso = Math.min((timestamp - inicio) / duration, 1);
+                    const novoVolume = volumeInicial + diferenca * progresso;
+                    audio.volume = Math.min(1, Math.max(0, novoVolume));
+
+                    if (progresso < 1) {
+                        volumeFadeFrame = requestAnimationFrame(passo);
+                    } else {
+                        volumeFadeFrame = null;
+                        volumeFadeResolver = null;
+                        if (pauseWhenDone && targetVolume <= 0) {
+                            audio.pause();
+                            audio.muted = true;
+                        }
+                        resolve(true);
+                    }
+                };
+
+                volumeFadeFrame = requestAnimationFrame(passo);
+            });
+        }
+
+        function prepararReinicioNatural() {
+            if (!backgroundMusic) return;
+
+            loopFadeRodando = false;
+
+            if (isMuted || !userInteracted) {
+                backgroundMusic.pause();
+                backgroundMusic.muted = true;
+                backgroundMusic.volume = 0;
+                updateMuteIcon();
+                return;
+            }
+
+            backgroundMusic.muted = false;
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.volume = 0;
+            playMusic(true);
+            fadeVolume(backgroundMusic, VOLUME_PADRAO).then(() => {
+                updateMuteIcon();
+            });
+        }
+
+        function monitorarFimDaFaixa() {
+            if (!backgroundMusic || loopFadeRodando || backgroundMusic.paused || isMuted || !userInteracted) {
+                return;
+            }
+
+            const duracao = backgroundMusic.duration;
+            if (!Number.isFinite(duracao) || duracao <= 0) {
+                return;
+            }
+
+            const restante = duracao - backgroundMusic.currentTime;
+            if (restante <= LOOP_FADE_MARGEM_S && restante > 0.15) {
+                const token = ++loopFadeSequencia;
+                loopFadeRodando = true;
+                const duracaoFade = Math.max(400, Math.min(LOOP_FADE_DURATION_MS, restante * 1000));
+                fadeVolume(backgroundMusic, 0, { duration: duracaoFade, pauseWhenDone: true })
+                    .then((concluido) => {
+                        if (loopFadeSequencia !== token) {
+                            return;
+                        }
+
+                        if (!concluido) {
+                            loopFadeRodando = false;
+                            return;
+                        }
+                        updateMuteIcon();
+                        prepararReinicioNatural();
+                    })
+                    .catch(() => {
+                        if (loopFadeSequencia === token) {
+                            loopFadeRodando = false;
+                        }
+                    });
+            }
+        }
+
+        function updateMuteIcon() {
+            if (!muteButton) return;
+            const shouldShowMuted = isMuted || !backgroundMusic || backgroundMusic.paused;
+            muteButton.innerHTML = shouldShowMuted ? 
+                '<i class="ph-bold ph-speaker-slash"></i>' : 
+                '<i class="ph-bold ph-speaker-high"></i>';
+            muteButton.setAttribute('aria-pressed', shouldShowMuted ? 'true' : 'false');
+            muteButton.setAttribute('aria-label', shouldShowMuted ? 'Ativar música' : 'Silenciar música');
+        }
+
+        function playMusic(force = false) {
+            if (!backgroundMusic || !userInteracted) return;
+            if (force || backgroundMusic.paused) {
+                backgroundMusic.play().then(() => {
+                    updateMuteIcon();
+                }).catch(e => console.log("Autoplay bloqueado."));
+            }
+        }
+        
+        document.body.addEventListener('click', () => {
+            if (!userInteracted) {
+                userInteracted = true;
+                isMuted = false;
+                if (backgroundMusic) {
+                    loopFadeRodando = false;
+                    backgroundMusic.muted = false;
+                    backgroundMusic.volume = 0;
+                    playMusic(true);
+                    fadeVolume(backgroundMusic, VOLUME_PADRAO);
+                }
+                updateMuteIcon();
+            }
+        }, { once: true });
+
+        if (muteButton) {
+            muteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!backgroundMusic) return;
+
+                if (!userInteracted) {
+                    userInteracted = true;
+                }
+
+                if (isMuted) {
+                    isMuted = false;
+                    loopFadeRodando = false;
+                    backgroundMusic.muted = false;
+                    backgroundMusic.volume = 0;
+                    updateMuteIcon();
+                    playMusic(true);
+                    fadeVolume(backgroundMusic, VOLUME_PADRAO);
+                } else {
+                    isMuted = true;
+                    loopFadeRodando = false;
+                    backgroundMusic.muted = false;
+                    updateMuteIcon();
+                    fadeVolume(backgroundMusic, 0, { duration: 1800, pauseWhenDone: true }).then(() => {
+                        updateMuteIcon();
+                    });
+                }
+            });
+        }
+
+        // Monitora estado da música
+        if (backgroundMusic) {
+            backgroundMusic.addEventListener('play', () => {
+                loopFadeRodando = false;
+                updateMuteIcon();
+            });
+            backgroundMusic.addEventListener('pause', updateMuteIcon);
+            backgroundMusic.addEventListener('timeupdate', monitorarFimDaFaixa);
+            backgroundMusic.addEventListener('ended', prepararReinicioNatural);
+            backgroundMusic.addEventListener('seeking', () => {
+                loopFadeRodando = false;
+            });
+            backgroundMusic.addEventListener('emptied', () => {
+                loopFadeRodando = false;
+            });
+        }
+
+        function atualizarProgresso(idTela) {
+            const indiceEncontrado = ordemTelas.indexOf(idTela);
+            const indiceAtual = indiceEncontrado === -1 ? 0 : indiceEncontrado;
+            passos.forEach((passo, indice) => {
+                if (indice < indiceAtual) {
+                    passo.dataset.estado = 'concluido';
+                    passo.removeAttribute('aria-current');
+                } else if (indice === indiceAtual) {
+                    passo.dataset.estado = 'ativo';
+                    passo.setAttribute('aria-current', 'step');
+                } else {
+                    delete passo.dataset.estado;
+                    passo.removeAttribute('aria-current');
+                }
+            });
+        }
+
+        function criarCoracoesFlutuantes() {
+            if (!floatingHeartsContainer || reduzMovimento.matches) return;
+            const simbolos = ['❤', '♡', '❣'];
+            const quantidade = 12;
+            floatingHeartsContainer.innerHTML = '';
+
+            for (let i = 0; i < quantidade; i++) {
+                const heart = document.createElement('span');
+                heart.textContent = simbolos[i % simbolos.length];
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.animationDuration = `${10 + Math.random() * 8}s`;
+                heart.style.animationDelay = `${Math.random() * 6}s`;
+                heart.style.opacity = `${0.3 + Math.random() * 0.4}`;
+                floatingHeartsContainer.appendChild(heart);
+            }
+        }
+
+        function reiniciarHistoria() {
+            animacaoPedidoRodando = false;
+            animacaoPedidoConcluida = reduzMovimento.matches;
+
+            if (pedidoNomeEl && pedidoPerguntaEl) {
+                resetarEscritaPedido();
+                if (reduzMovimento.matches) {
+                    definirConteudoComQuebras(pedidoNomeEl, textosPedido.nome);
+                    definirConteudoComQuebras(pedidoPerguntaEl, textosPedido.pergunta);
+                    pedidoNomeEl.classList.add('finalizado');
+                    pedidoPerguntaEl.classList.add('finalizado');
+                }
+            }
+
+            mostrarTela('tela-1');
+
+            if (backgroundMusic) {
+                cancelarFadeVolume();
+                backgroundMusic.currentTime = 0;
+                loopFadeRodando = false;
+
+                if (!isMuted && userInteracted) {
+                    backgroundMusic.muted = false;
+                    backgroundMusic.volume = 0;
+                    playMusic(true);
+                    fadeVolume(backgroundMusic, VOLUME_PADRAO).then(() => {
+                        updateMuteIcon();
+                    });
+                } else {
+                    backgroundMusic.pause();
+                    backgroundMusic.muted = true;
+                    backgroundMusic.volume = 0;
+                    updateMuteIcon();
+                }
+            }
+            window.scrollTo({ top: 0, behavior: reduzMovimento.matches ? 'auto' : 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            mostrarTela('tela-1');
+            updateMuteIcon();
+            criarCoracoesFlutuantes();
+        });
+
+        function handleReducedMotionChange(event) {
+            if (event.matches) {
+                if (floatingHeartsContainer) floatingHeartsContainer.innerHTML = '';
+                animacaoPedidoConcluida = true;
+                animacaoPedidoRodando = false;
+                if (pedidoNomeEl && pedidoPerguntaEl) {
+                    resetarEscritaPedido();
+                    definirConteudoComQuebras(pedidoNomeEl, textosPedido.nome);
+                    definirConteudoComQuebras(pedidoPerguntaEl, textosPedido.pergunta);
+                    pedidoNomeEl.classList.add('finalizado');
+                    pedidoPerguntaEl.classList.add('finalizado');
+                }
+            } else {
+                criarCoracoesFlutuantes();
+                animacaoPedidoConcluida = false;
+                animacaoPedidoRodando = false;
+                if (pedidoNomeEl && pedidoPerguntaEl) {
+                    resetarEscritaPedido();
+                    const telaAtual = document.querySelector('.tela[data-visivel="true"]');
+                    if (telaAtual && telaAtual.id === 'tela-pedido') {
+                        iniciarEscritaPedido();
+                    }
+                }
+            }
+        }
+
+        if (reduzMovimento.addEventListener) {
+            reduzMovimento.addEventListener('change', handleReducedMotionChange);
+        } else if (reduzMovimento.addListener) {
+            reduzMovimento.addListener(handleReducedMotionChange);
+        }
+
+    window.reiniciarHistoria = reiniciarHistoria;
+    window.mostrarTela = mostrarTela;
+    window.handleWrongAnswer = handleWrongAnswer;
+
+    </script>
+</body>
+</html>
