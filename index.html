@@ -420,18 +420,23 @@
         #btn-sim { 
             background: linear-gradient(45deg, #d4a5a5, #e6c5c5); 
             flex: 1;
-            min-width: clamp(120px, 30vw, 180px);
+            min-width: 0;
+            width: 100%;
         }
         #btn-nao { 
             background-color: #d1d1d1; 
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); 
-            min-width: clamp(100px, 25vw, 120px); 
-            width: auto; 
-            flex-shrink: 0; 
+            flex: 1;
+            min-width: 0;
+            width: 100%;
         }
         #btn-nao::before { content: none; }
         #btn-nao:hover { background-color: #c4c4c4; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1); }
-        #btn-nao.fugindo { position: absolute; transition: all 0.3s ease; }
+        #btn-nao.fugindo { 
+            position: relative; 
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
         
         /* Botão de controle de áudio */
         .audio-control {
@@ -495,13 +500,14 @@
             }
             
             .opcoes-pedido {
-                flex-direction: column;
+                flex-direction: row;
                 gap: 12px;
             }
             
             #btn-sim, #btn-nao {
-                flex: none;
-                min-width: auto;
+                flex: 1;
+                min-width: 0;
+                width: 100%;
             }
             
             .pedido-nome {
@@ -990,16 +996,22 @@
             }
 
             telas.forEach(tela => {
+                // Remove foco de todos os elementos focáveis antes de ocultar
+                const focusableElements = tela.querySelectorAll('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])');
+                focusableElements.forEach(el => el.blur());
+                
                 tela.style.display = 'none';
                 tela.removeAttribute('data-visivel');
                 tela.setAttribute('aria-hidden', 'true');
+                tela.setAttribute('inert', ''); // Adiciona inert como sugerido
             });
 
             proximaTela.style.display = 'flex';
 
             const aplicarVisibilidade = () => {
                 proximaTela.setAttribute('data-visivel', 'true');
-                proximaTela.setAttribute('aria-hidden', 'false');
+                proximaTela.removeAttribute('aria-hidden'); // Remove ao invés de setar false
+                proximaTela.removeAttribute('inert'); // Remove inert também
             };
 
             if (reduzMovimento.matches) {
@@ -1072,75 +1084,59 @@
             btnNao.style.left = '';
             btnNao.style.top = '';
             btnNao.style.transform = '';
+            btnNao.style.zIndex = '';
+            btnNao.style.transition = '';
         }
 
         // Faz o botão "Não" fugir quando o usuário tenta clicar
         function moverBotaoNao() {
-            if (!mainElement || !btnNao) {
-                return;
-            }
+            if (!btnNao) return;
 
-            // Atualiza o layout antes de calcular posições
-            btnNao.offsetHeight;
-            
-            // Dimensões do container principal
-            const containerRect = mainElement.getBoundingClientRect();
-            const containerPadding = {
-                left: parseInt(getComputedStyle(mainElement).paddingLeft, 10),
-                top: parseInt(getComputedStyle(mainElement).paddingTop, 10),
-                right: parseInt(getComputedStyle(mainElement).paddingRight, 10),
-                bottom: parseInt(getComputedStyle(mainElement).paddingBottom, 10)
-            };
+            const telaPedido = document.getElementById('tela-pedido');
+            if (!telaPedido) return;
 
-            // Calcula área útil do container
-            const areaDisponivel = {
-                width: containerRect.width - containerPadding.left - containerPadding.right,
-                height: containerRect.height - containerPadding.top - containerPadding.bottom
-            };
-
-            // Tamanho do botão
-            const btnRect = btnNao.getBoundingClientRect();
-            const larguraBotao = btnRect.width;
-            const alturaBotao = btnRect.height;
-
-            // Margem de segurança
-            const margemSeguranca = 10;
-
-            // Define limites para o movimento
-            const limiteMaxX = Math.max(areaDisponivel.width - larguraBotao - margemSeguranca, margemSeguranca);
-            const limiteMaxY = Math.max(areaDisponivel.height - alturaBotao - margemSeguranca, margemSeguranca);
-
-            // Não move se não tem espaço
-            if (limiteMaxX <= margemSeguranca || limiteMaxY <= margemSeguranca) {
-                return;
-            }
-
-            // Nova posição aleatória
-            const novaX = margemSeguranca + Math.random() * (limiteMaxX - margemSeguranca);
-            const novaY = margemSeguranca + Math.random() * (limiteMaxY - margemSeguranca);
-
-            // Move o botão para nova posição
+            // Usa posição relativa ao container da tela de pedido
             btnNao.classList.add('fugindo');
-            btnNao.style.position = 'absolute';
-            btnNao.style.left = `${novaX}px`;
-            btnNao.style.top = `${novaY}px`;
+            btnNao.style.position = 'relative';
+            
+            // Posições predefinidas seguras dentro do card
+            const posicoes = [
+                { transform: 'translate(-80px, -60px)' },
+                { transform: 'translate(60px, -40px)' },
+                { transform: 'translate(-40px, -80px)' },
+                { transform: 'translate(80px, -20px)' },
+                { transform: 'translate(-60px, 20px)' },
+                { transform: 'translate(40px, -60px)' },
+                { transform: 'translate(-20px, -40px)' },
+                { transform: 'translate(20px, 40px)' }
+            ];
+            
+            // Escolhe uma posição aleatória
+            const posicaoAleatoria = posicoes[Math.floor(Math.random() * posicoes.length)];
+            btnNao.style.transform = posicaoAleatoria.transform;
+            btnNao.style.transition = 'transform 0.3s ease';
         }
 
-        // Eventos do botão "Não"
+        // Eventos do botão "Não" - simplificado para funcionar melhor no mobile
         if (btnNao) {
-            btnNao.addEventListener('mouseenter', moverBotaoNao);
-            btnNao.addEventListener('touchstart', (e) => {
+            // Função para todos os eventos
+            const handleInteraction = (e) => {
+                // console.log('Evento detectado:', e.type); // Debug removido
                 e.preventDefault();
+                e.stopPropagation();
                 moverBotaoNao();
-            });
+                return false;
+            };
             
-            // Evita cliques durante o movimento
-            btnNao.addEventListener('click', (e) => {
-                if (btnNao.classList.contains('fugindo')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            });
+            // Múltiplos eventos para garantir funcionamento
+            btnNao.addEventListener('mouseenter', handleInteraction);
+            btnNao.addEventListener('mouseover', handleInteraction);
+            btnNao.addEventListener('mousedown', handleInteraction);
+            btnNao.addEventListener('touchstart', handleInteraction, { passive: false });
+            btnNao.addEventListener('touchmove', handleInteraction, { passive: false });
+            btnNao.addEventListener('touchend', handleInteraction, { passive: false });
+            btnNao.addEventListener('click', handleInteraction);
+            btnNao.addEventListener('focus', handleInteraction);
         }
         
         // Feedback visual para respostas erradas
