@@ -222,6 +222,15 @@
             margin-bottom: clamp(15px, 3vw, 20px);
         }
 
+        .foto-pedido {
+            width: 100%;
+            height: clamp(140px, 35vw, 180px);
+            border-radius: clamp(10px, 2.5vw, 15px);
+            object-fit: cover;
+            object-position: center 30%;
+            margin-bottom: clamp(15px, 3vw, 20px);
+        }
+
         .divider {
             height: 1px;
             width: 50px;
@@ -697,6 +706,7 @@
                 <li class="passo" data-tela="tela-2">Lembranças</li>
                 <li class="passo" data-tela="tela-3">Encontro</li>
                 <li class="passo" data-tela="tela-2b">Trilha Sonora</li>
+                <li class="passo" data-tela="tela-3b">Sabores</li>
                 <li class="passo" data-tela="tela-4">Transição</li>
                 <li class="passo" data-tela="tela-pedido">Pedido</li>
                 <li class="passo" data-tela="tela-sim">Final</li>
@@ -737,12 +747,24 @@
         <section id="tela-2b" class="tela" style="display: none;">
             <h2>Relembrando Nossa História</h2>
             <div class="divider"></div>
-            <img src="src/imagens/foto-pergunta1.png" alt="Capa de um álbum de música" class="foto-pergunta">
+            <img src="src/imagens/foto-pergunta3.png" alt="Capa de um álbum de música" class="foto-pergunta">
             <p class="pergunta">E a nossa trilha sonora? Qual música marcou o início de tudo para nós?</p>
             <div class="opcoes">
                 <button onclick="handleWrongAnswer(this)">Evidências, um clássico sertanejo.</button>
-                <button onclick="mostrarTela('tela-4')">Die With a Smile, de Lady Gaga e Bruno Mars.</button>
+                <button onclick="mostrarTela('tela-3b')">Die With a Smile, de Lady Gaga e Bruno Mars.</button>
                 <button onclick="handleWrongAnswer(this)">Baby Shark (doo doo doo doo doo doo).</button>
+            </div>
+        </section>
+
+        <section id="tela-3b" class="tela" style="display: none;">
+            <h2>Relembrando Nossos Momentos</h2>
+            <div class="divider"></div>
+            <img src="src/imagens/foto-pergunta4.png" alt="Comida favorita" class="foto-pergunta">
+            <p class="pergunta">O que mais gostamos de comer?</p>
+            <div class="opcoes">
+                <button onclick="handleWrongAnswer(this)">Salada e sementes de girassol.</button>
+                <button onclick="mostrarTela('tela-4')">Lanche e Açaí, nosso combo perfeito.</button>
+                <button onclick="handleWrongAnswer(this)">Vento e poeira cósmica.</button>
             </div>
         </section>
         
@@ -754,7 +776,7 @@
         </section>
 
         <section id="tela-pedido" class="tela" style="display: none;">
-            <img src="src/imagens/foto-capa.png" alt="Foto favorita de vocês" class="foto-principal">
+            <img src="src/imagens/foto-pergunta5.png" alt="Foto favorita de vocês" class="foto-pedido">
             <h2 class="pedido-nome">Nicole...</h2>
             <p>Nossa jornada até aqui tem sido incrível, e mal posso esperar para escrever os próximos capítulos com você.</p>
             <h1 class="pedido-pergunta">Quer ser minha<br>namorada?</h1>
@@ -768,7 +790,6 @@
             <div class="final-container">
                 <h1 class="transicao">Eu sabia que você diria sim!</h1>
                 <p class="transicao" style="animation-delay: 0.5s;">Agora, que tal largar o celular e me dar um beijo?<span class="emoji-beijo" aria-hidden="true">😘</span></p>
-                <p class="transicao" style="animation-delay: 1s;">Guarde esta página com carinho. Ela será um lembrete eterno de como nossa nova jornada começou.</p>
                 <div id="heart-animation-container" class="heart-container">
                     <svg viewBox="0 0 24 24">
                         <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -1515,3 +1536,4 @@
     </script>
 </body>
 </html>
+
